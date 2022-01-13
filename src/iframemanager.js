@@ -1,5 +1,5 @@
 /*!
- * iframemanager v1.0
+ * iframemanager v1.1
  * Author Orest Bida
  * Released under the MIT License
  */
@@ -12,9 +12,10 @@
         preloads: [],
         stopObserver : false,
         currLang : null,
+        showBtn : true,
         services : null,
         serviceNames : null,
-         
+
         _getVideoProp : function(_div){
             return {
                 _id: _div.dataset['id'],
@@ -33,8 +34,8 @@
 
         /**
          * Lazy load all thumbnails of the iframes relative to specified service
-         * @param {String} service_name 
-         * @param {String} thumbnail_url 
+         * @param {String} service_name
+         * @param {String} thumbnail_url
          */
         _lazyLoadThumnails : function(service_name, thumbnail_url){
 
@@ -52,7 +53,7 @@
                         }
                     });
                 });
-   
+
                 for(var i=0; i<length; i++){
                     thumbnailObserver.observe(videos[i].div);
                 }
@@ -67,7 +68,7 @@
         /**
          * 1. Set cookie (if not alredy set)
          * 2. show iframes (relative to the specified service)
-         * @param {String} service_name 
+         * @param {String} service_name
          */
         acceptService : function(service_name){
             this.stopObserver = false;
@@ -85,7 +86,7 @@
 
             function _acceptService(service_name, service){
                 if(!module._getCookie(service['cookie']['name'])){
-                    module._setCookie(service['cookie']); 
+                    module._setCookie(service['cookie']);
                 }
                 module._hideAllNotices(service_name, service);
             }
@@ -93,9 +94,9 @@
 
         /**
          * 1. set cookie
-         * 2. hide all notices 
+         * 2. hide all notices
          * 3. how iframes (relative to the specified service)
-         * @param {String} service_name 
+         * @param {String} service_name
          */
          rejectService : function(service_name){
             if(service_name === 'all'){
@@ -115,7 +116,7 @@
                 if(module._getCookie(service['cookie']['name'])){
                     module._eraseCookie(service['cookie']);
                 }
-                
+
                 module._showAllNotices(service_name, service);
             }
         },
@@ -126,16 +127,16 @@
 
             // Load script only if not alredy loaded
             if(!document.querySelector('script[src="' + src + '"]')){
-                
+
                 var script = this._createNode('script');
-                
+
                 // if an array is provided => add custom attributes
                 if(attrs && attrs.length > 0){
                     for(var i=0; i<attrs.length; ++i){
                         attrs[i] && script.setAttribute(attrs[i]['name'], attrs[i]['value']);
                     }
                 }
-                
+
                 // if callback function defined => run callback onload
                 if(function_defined){
                     if(script.readyState) {  // only required for IE <9
@@ -151,7 +152,7 @@
                 }
 
                 script.src = src;
-                
+
                 /**
                  * Append script to head
                  */
@@ -163,11 +164,11 @@
 
         /**
          * Set image as background
-         * @param {String} url 
-         * @param {Object} video 
+         * @param {String} url
+         * @param {Object} video
          */
         _loadThumbnail: function(url, video){
-            
+
             // Set custom thumbnail if provided
             if(typeof video.thumbnail === 'string'){
                 video.thumbnailPreload && this._thumbnailPreload(video.thumbnail);
@@ -175,7 +176,7 @@
             }else{
 
                 if(typeof url === "function"){
-                    
+
                     url(video._id, function(src){
                         module._preconnect(src);
                         video.thumbnailPreload && this._thumbnailPreload(src);
@@ -195,17 +196,17 @@
 
                 var img = new Image();
                 img.onload = function(){
-                    video.backgroundDiv.classList.add('loaded'); 
+                    video.backgroundDiv.classList.add('loaded');
                 }
-                
+
                 img.src = src;
             }
         },
 
         /**
          * Create iframe and append it into the specified div
-         * @param {Object} video 
-         * @param {Object} service 
+         * @param {Object} video
+         * @param {Object} service
          */
         _createIframe: function(video, service) {
 
@@ -244,11 +245,13 @@
 
             video.iframe = this._createNode('iframe');
             var iframeParams = video.params || (service['iframe'] && service['iframe']['params']);
-            
+
             // Replace data-id with valid resource id
             var src = service['embedUrl'].replace('{data-id}', video._id);
 
             video.iframe['loading'] = 'lazy';
+            video.iframe['scrolling'] = 'no';
+            video.iframe['frameborder'] = 'no';
             video._title && (video.iframe.title = video._title);
 
             // Add allow attribute to iframe
@@ -274,12 +277,12 @@
                 service['iframe'] && typeof service['iframe']['onload'] === 'function' && service['iframe']['onload'](video._id, this);
             }
 
-            video.div.appendChild(video.iframe);          
+            video.div.appendChild(video.iframe);
         },
 
         /**
          * Remove iframe HTMLElement from div
-         * @param {Object} video 
+         * @param {Object} video
          */
         _removeIframe: function(video){
             video.iframe.parentNode.removeChild(video.iframe);
@@ -288,7 +291,7 @@
 
         /**
          * Remove necessary classes to hide notice
-         * @param {Object} video 
+         * @param {Object} video
          */
         _hideNotice : function(video){
             video.div.classList.add('c-h-n');
@@ -297,7 +300,7 @@
 
         /**
          * Add necessary classes to show notice
-         * @param {Object} video 
+         * @param {Object} video
          */
         _showNotice : function(video){
             video.div.classList.remove('c-h-n', 'c-h-b');
@@ -315,7 +318,7 @@
 
         /**
          * Set cookie based on given object
-         * @param {Object} cookie 
+         * @param {Object} cookie
          */
         _setCookie : function(cookie) {
 
@@ -324,7 +327,7 @@
             var expiration = cookie['expiration'] || 182;
             var sameSite = cookie['sameSite'] || "Lax";
             var domain = cookie['domain'] || location.hostname;
-            
+
             date.setTime(date.getTime() + (1000 * ( expiration * 24 * 60 * 60)));
             var expires = " expires=" + date.toUTCString();
 
@@ -345,7 +348,7 @@
 
         /**
          * Delete cookie by name & path
-         * @param {Array} cookies 
+         * @param {Array} cookies
          * @param {String} custom_path
          */
          _eraseCookie : function(cookie) {
@@ -358,7 +361,7 @@
 
         /**
          * Get all prop. keys defined inside object
-         * @param {Object} obj 
+         * @param {Object} obj
          */
         _getKeys : function(obj){
             if(typeof obj === "object"){
@@ -370,19 +373,19 @@
 
         /**
          * Add link rel="preconnect"
-         * @param {String} url 
+         * @param {String} url
          */
         _preconnect: function(url){
             var url = url.split("://");
             var protocol = url[0];
-            
+
             // if valid protocol
             if(
-                protocol === 'http' || 
+                protocol === 'http' ||
                 protocol === 'https'
             ){
                 var domain = (url[1] && url[1].split("/")[0]) || false;
-                
+
                 // if not current domain
                 if(domain && domain !== location.hostname){
                     if(this.preconnects.indexOf(domain) === -1){
@@ -398,7 +401,7 @@
 
         /**
          * Add link rel="preload"
-         * @param {String} url 
+         * @param {String} url
          */
         _thumbnailPreload : function(url){
             if(url && this.preloads.indexOf(url) === -1){
@@ -413,7 +416,7 @@
 
         /**
          * Create and return HTMLElement based on specified type
-         * @param {String} type 
+         * @param {String} type
          * @returns {HTMLElement}
          */
         _createNode : function(type){
@@ -428,14 +431,14 @@
                         setTimeout(function(){
                             callback(target.querySelector('iframe'));
                         }, 300);
-                        
+
                         // later, you can stop observing
                         observer.disconnect();
                         return;
                     }
                 });
             });
-        
+
             // configuration of the observer:
             var config = { attributes: false, childList: true, subtree: false }
 
@@ -451,16 +454,17 @@
 
         /**
          * Create all notices relative to the specified service
-         * @param {String} service_name 
-         * @param {Object} service 
-         * @param {Boolean} hidden 
+         * @param {String} service_name
+         * @param {Object} service
+         * @param {Boolean} hidden
          */
         _createAllNotices : function(service_name, service, hidden){
 
+            var showBtn = this.showBtn;
             // get number of iframes of current service
             var iframes = this.iframes[service_name];
             var n_iframes = iframes.length;
-            
+
             // for each iframe
             for(var i=0; i<n_iframes; i++){
                 (function(i){
@@ -468,29 +472,45 @@
                     var video = iframes[i];
 
                     if(!video.hasNotice){
-                        var loadBtnText = service['languages'][module.currLang]['loadBtn'];
+
+
                         var noticeText = service['languages'][module.currLang]['notice'];
-                        var loadAllBtnText = service['languages'][module.currLang]['loadAllBtn'];
+
 
                         var fragment = document.createDocumentFragment();
                         var notice = module._createNode('div');
                         var span = module._createNode('span');
                         var innerDiv = module._createNode('p');
-                        var load_button = module._createNode('button');
-                        var load_all_button = module._createNode('button');
-            
+
                         var notice_text = module._createNode('span');
                         var ytVideoBackground = module._createNode('div');
                         var loaderBg = module._createNode('div');
                         var ytVideoBackgroundInner = module._createNode('div');
                         var notice_text_container = module._createNode('div');
-                        var buttons = module._createNode('div');
-                        
-                        load_button.type = load_all_button.type = 'button';
+                        if (showBtn) {
+                            var loadBtnText = service['languages'][module.currLang]['loadBtn'];
+                            var loadAllBtnText = service['languages'][module.currLang]['loadAllBtn'];
+
+                            var load_button = module._createNode('button');
+                            var load_all_button = module._createNode('button');
+
+                            var buttons = module._createNode('div');
+
+                            load_button.type = load_all_button.type = 'button';
+
+                            load_button.textContent = loadBtnText;
+                            load_button.className = 'c-l-b';
+
+                            load_all_button.textContent = loadAllBtnText;
+                            load_all_button.className = 'c-la-b';
+
+                            buttons.className =  'c-n-a';
+                            buttons.appendChild(load_button);
+                            buttons.appendChild(load_all_button);
+                        }
+
                         notice_text.className = 'cc-text';
-                        load_button.type = load_all_button.type = 'button';
-                        notice_text.className = 'cc-text';
-                        
+
                         ytVideoBackgroundInner.className = 'c-bg-i';
                         video.backgroundDiv = ytVideoBackgroundInner;
                         loaderBg.className = 'c-ld';
@@ -501,16 +521,15 @@
 
                         var iframeTitle = video._title;
                         var fragment_2 = document.createDocumentFragment();
-        
+
                         if(iframeTitle) {
                             var title_span = module._createNode('span');
                             title_span.className = 'c-tl';
                             title_span.insertAdjacentHTML('beforeend', iframeTitle);
                             fragment_2.appendChild(title_span);
                         }
-                        
-                        load_button.textContent = loadBtnText;
-                        load_all_button.textContent = loadAllBtnText;
+
+
 
                         notice_text.appendChild(fragment_2);
                         notice && notice_text.insertAdjacentHTML('beforeend', noticeText || "");
@@ -520,17 +539,13 @@
                         span.className = 'c-n-t';
                         innerDiv.className = 'c-n-c';
                         notice.className = 'c-nt';
-                        
-                        buttons.className =  'c-n-a';
-                        load_button.className = 'c-l-b';
-                        load_all_button.className = 'c-la-b';
 
-                        buttons.appendChild(load_button);
-                        buttons.appendChild(load_all_button);
-           
+
+
                         notice_text_container.appendChild(span);
-                        notice_text_container.appendChild(buttons);
-            
+                        if (showBtn)
+                            notice_text_container.appendChild(buttons);
+
                         innerDiv.appendChild(notice_text_container);
                         notice.appendChild(innerDiv);
 
@@ -538,16 +553,18 @@
                             module._hideNotice(video);
                             module._createIframe(video, service);
                         }
-                        
-                        load_button.addEventListener('click', function(){
-                            showVideo();
-                        });
+                        if (showBtn){
 
-                        load_all_button.addEventListener('click', function(){
-                            showVideo();
-                            module.acceptService(service_name);
-                        });
-            
+                            load_button.addEventListener('click', function(){
+                                showVideo();
+                            });
+
+                            load_all_button.addEventListener('click', function(){
+                                showVideo();
+                                module.acceptService(service_name);
+                            });
+                        }
+
                         ytVideoBackground.appendChild(ytVideoBackgroundInner);
                         fragment.appendChild(notice);
                         (service['thumbnailUrl'] || video.thumbnail) && fragment.appendChild(ytVideoBackground);
@@ -566,8 +583,8 @@
         /**
          * Hides all notices relative to the specified service
          * and creates iframe with the video
-         * @param {String} service_name 
-         * @param {Object} service 
+         * @param {String} service_name
+         * @param {Object} service
          */
         _hideAllNotices : function(service_name, service){
 
@@ -577,13 +594,13 @@
 
             if ("IntersectionObserver" in window) {
                 var observer = new IntersectionObserver(function(entries) {
-                    if(module.stopObserver){ 
+                    if(module.stopObserver){
                         observer.disconnect();
                         return;
                     }
                     for(var i=0; i<entries.length; ++i){
                         if(entries[i].isIntersecting){
-                            (function(_index){    
+                            (function(_index){
                                 setTimeout(function(){
                                     var index = entries[_index].target.dataset.index;
                                     module._createIframe(videos[index], service);
@@ -594,7 +611,7 @@
                         }
                     }
                 });
-   
+
                 for(var i=0; i<n_iframes; i++){
                     if(!videos[i].hasIframe){
                         observer.observe(videos[i].div);
@@ -614,8 +631,8 @@
         /**
          * Show all notices relative to the specified service
          * and hides iframe with the video
-         * @param {String} service_name 
-         * @param {Object} service 
+         * @param {String} service_name
+         * @param {Object} service
          */
         _showAllNotices : function(service_name, service){
 
@@ -641,8 +658,8 @@
 
         /**
          * Validate language (make sure it exists)
-         * @param {String} lang 
-         * @param {Object} all_languages 
+         * @param {String} lang
+         * @param {Object} all_languages
          * @returns {String} language
          */
         _getValidatedLanguage : function(lang, all_languages){
@@ -690,6 +707,8 @@
                 return;
             }
 
+            this.showBtn = typeof _config['showBtn'] === "boolean" ? _config['showBtn'] : true;
+
             // Set curr lang
             this.currLang = _config['currLang'];
             var languages = services[service_names[0]]['languages'];
@@ -717,7 +736,7 @@
                  * iframes/divs in the dom that have data-service value as current service name
                  */
                 var found_iframes = document.querySelectorAll('div[data-service="' + service_name + '"]');
-                
+
                 /**
                  * number of iframes with current service
                  */
@@ -741,11 +760,11 @@
 
                 // get current service's cookie value
                 var cookie = this._getCookie(cookie_name);
-    
+
                 // if cookie is not set => show notice
                 if(cookie){
                     this._createAllNotices(service_name, curr_service, true);
-                    this._hideAllNotices(service_name, curr_service); 
+                    this._hideAllNotices(service_name, curr_service);
                 }else{
                     this._createAllNotices(service_name, curr_service, false);
                 }
@@ -761,5 +780,5 @@
         window[fn_name] = undefined;
         return module;
     };
-    
+
 })();
