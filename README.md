@@ -197,7 +197,7 @@ All available options for the config. object:
     currLang: 'en',     // current language of the notice (must also be defined in the "languages" object below)
     autoLang: false,    // if enabled => use current client's browser language 
                         // instead of currLang [OPTIONAL]
-
+    showBtn: true,      // if false, remove buttons (you can skip loadBtn and loadAllBtn options)
     services : {
         myservice : {
 
